@@ -8,6 +8,7 @@ interface Props {
   onRetake: () => void;
   onSave: () => void;
   alreadySaved: boolean;
+  loading?: boolean;
 }
 
 function ScoreBadge({ score }: { score: number }) {
@@ -21,6 +22,28 @@ function ScoreBadge({ score }: { score: number }) {
     <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${color}`}>
       {score} match{score !== 1 ? "es" : ""}
     </span>
+  );
+}
+
+function SkeletonCard() {
+  return (
+    <div className="border border-[#a9aeb1] p-5 bg-white animate-pulse" aria-hidden="true">
+      <div className="flex items-start justify-between gap-3 mb-3">
+        <div className="h-4 bg-gray-200 rounded w-3/4" />
+        <div className="h-5 bg-gray-200 rounded-full w-16" />
+      </div>
+      <div className="space-y-2 mb-4">
+        <div className="h-3 bg-gray-200 rounded w-full" />
+        <div className="h-3 bg-gray-200 rounded w-5/6" />
+        <div className="h-3 bg-gray-200 rounded w-2/3" />
+      </div>
+      <div className="space-y-1.5 mb-4">
+        <div className="h-2.5 bg-gray-200 rounded w-20 mb-2" />
+        <div className="h-2.5 bg-gray-200 rounded w-1/2" />
+        <div className="h-2.5 bg-gray-200 rounded w-2/5" />
+      </div>
+      <div className="h-8 bg-gray-200 rounded w-32" />
+    </div>
   );
 }
 
@@ -77,7 +100,7 @@ function ProgramCard({ result }: { result: MatchResult }) {
   );
 }
 
-export default function ResultsList({ board, onRetake, onSave, alreadySaved }: Props) {
+export default function ResultsList({ board, onRetake, onSave, alreadySaved, loading }: Props) {
   const { results, answers } = board;
 
   return (
@@ -86,7 +109,9 @@ export default function ResultsList({ board, onRetake, onSave, alreadySaved }: P
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
           <h2 className="text-lg font-bold text-gray-900">
-            {results.length > 0
+            {loading
+              ? "Finding programs…"
+              : results.length > 0
               ? `${results.length} program${results.length !== 1 ? "s" : ""} matched`
               : "No programs matched"}
           </h2>
@@ -140,20 +165,72 @@ export default function ResultsList({ board, onRetake, onSave, alreadySaved }: P
         </div>
       </div>
 
-      {results.length === 0 ? (
-        <div className="rounded-xl border border-gray-200 bg-gray-50 p-8 text-center">
-          <p className="text-[#565c65] text-sm mb-3">
-            No programs matched your current profile. Try adjusting your business type or primary need.
+      {loading ? (
+        <div aria-live="polite" aria-busy="true" aria-label="Loading program results">
+          <div className="grid gap-4">
+            {[1, 2, 3].map((n) => (
+              <SkeletonCard key={n} />
+            ))}
+          </div>
+        </div>
+      ) : results.length === 0 ? (
+        <div className="border border-[#dfe1e2] bg-[#f0f0f0] p-8" role="region" aria-label="No programs found">
+          <div className="flex justify-center mb-4">
+            <svg
+              className="w-12 h-12 text-[#a9aeb1]"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              strokeWidth={1.5}
+              aria-hidden="true"
+            >
+              <circle cx="11" cy="11" r="7" />
+              <path strokeLinecap="round" d="M21 21l-3.5-3.5" />
+              <path strokeLinecap="round" d="M8.5 11h5M11 8.5v5" />
+            </svg>
+          </div>
+          <h3 className="text-base font-bold text-[#1b1b1b] text-center mb-2">
+            No programs matched your search
+          </h3>
+          <p className="text-sm text-[#565c65] text-center mb-5">
+            Try one of these next steps:
           </p>
-          <button
-            onClick={onRetake}
-            className="px-4 py-2 text-sm font-semibold bg-[#005ea2] text-white hover:bg-[#1a4480] transition-colors"
-          >
-            Retake Quiz
-          </button>
+          <ul className="space-y-3 mb-6 max-w-sm mx-auto">
+            <li className="flex gap-2 items-start text-sm text-[#1b1b1b]">
+              <span className="text-[#005ea2] font-bold shrink-0">1.</span>
+              <span><strong>Broaden your filters</strong> — select &ldquo;Other Rural Small Business&rdquo; or change your primary need.</span>
+            </li>
+            <li className="flex gap-2 items-start text-sm text-[#1b1b1b]">
+              <span className="text-[#005ea2] font-bold shrink-0">2.</span>
+              <span><strong>Search neighboring counties</strong> — some programs are region-specific and may cover adjacent areas.</span>
+            </li>
+            <li className="flex gap-2 items-start text-sm text-[#1b1b1b]">
+              <span className="text-[#005ea2] font-bold shrink-0">3.</span>
+              <span>
+                <strong>Contact the SBA directly</strong> —{" "}
+                <a
+                  href="https://www.sba.gov/local-assistance"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="underline text-[#005ea2] hover:text-[#1a4480]"
+                >
+                  find your local SBA district office
+                </a>{" "}
+                for personalized guidance.
+              </span>
+            </li>
+          </ul>
+          <div className="flex justify-center">
+            <button
+              onClick={onRetake}
+              className="px-6 py-2.5 text-sm font-semibold bg-[#005ea2] text-white rounded hover:bg-[#1a4480] transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#005ea2]"
+            >
+              Clear filters &amp; retake quiz
+            </button>
+          </div>
         </div>
       ) : (
-        <div className="grid gap-4">
+        <div aria-live="polite" className="grid gap-4">
           {results.map((r) => (
             <ProgramCard key={r.program.id} result={r} />
           ))}

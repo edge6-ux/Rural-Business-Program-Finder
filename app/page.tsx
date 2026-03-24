@@ -34,6 +34,7 @@ export default function Home() {
   const [boards, setBoards] = useState<Board[]>([]);
   const [activeBoard, setActiveBoard] = useState<Board | null>(null);
   const [lastAnswers, setLastAnswers] = useState<QuizAnswers | null>(null);
+  const [resultsLoading, setResultsLoading] = useState(false);
 
   // Load persisted boards on mount
   useEffect(() => {
@@ -51,6 +52,8 @@ export default function Home() {
     setActiveBoard(board);
     setLastAnswers(answers);
     setQuizOpen(false);
+    setResultsLoading(true);
+    setTimeout(() => setResultsLoading(false), 900);
     setView("results");
     console.log("[analytics] quiz_complete", {
       businessType: answers.businessType,
@@ -173,9 +176,9 @@ export default function Home() {
                       setQuizOpen(true);
                     }}
                     aria-label="Find programs — open the search quiz"
-                    className="w-full sm:w-auto px-5 py-3 sm:py-2.5 text-sm font-semibold bg-[#005ea2] text-white hover:bg-[#1a4480] transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#005ea2]"
+                    className="w-full sm:w-auto px-8 py-4 text-base font-bold bg-[#005ea2] text-white rounded-lg shadow-md hover:bg-[#1a4480] hover:shadow-lg transition-all focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#005ea2]"
                   >
-                    Find programs
+                    Find Programs
                   </button>
                   <button
                     onClick={() => setHowItWorksOpen(true)}
@@ -262,6 +265,7 @@ export default function Home() {
             onRetake={() => setQuizOpen(true)}
             onSave={handleSaveBoard}
             alreadySaved={boards.some((b) => b.id === activeBoard.id)}
+            loading={resultsLoading}
           />
         )}
       </main>

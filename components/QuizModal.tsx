@@ -110,6 +110,70 @@ const BUSINESS_TYPE_ICONS: Record<string, React.ReactNode> = {
   other:          <IconOther />,
 };
 
+// ── Generic accessible radiogroup (steps 2 & 3) ────────────────────────────
+
+function GenericRadioGroup<T extends string>({
+  value,
+  onChange,
+  options,
+  groupLabel,
+}: {
+  value: T | undefined;
+  onChange: (v: T) => void;
+  options: ReadonlyArray<{ value: T; label: string; desc?: string }>;
+  groupLabel: string;
+}) {
+  const groupRef = useRef<HTMLDivElement>(null);
+
+  function handleKeyDown(e: React.KeyboardEvent, index: number) {
+    const len = options.length;
+    let next: number | null = null;
+    if (e.key === "ArrowDown" || e.key === "ArrowRight") {
+      next = (index + 1) % len;
+    } else if (e.key === "ArrowUp" || e.key === "ArrowLeft") {
+      next = (index - 1 + len) % len;
+    } else if (e.key === "Home") {
+      next = 0;
+    } else if (e.key === "End") {
+      next = len - 1;
+    }
+    if (next !== null) {
+      e.preventDefault();
+      onChange(options[next].value);
+      const buttons = groupRef.current?.querySelectorAll<HTMLElement>('[role="radio"]');
+      buttons?.[next]?.focus();
+    }
+  }
+
+  return (
+    <div role="radiogroup" aria-label={groupLabel} ref={groupRef} className="space-y-2">
+      {options.map((opt, i) => {
+        const selected = value === opt.value;
+        const isFirst = i === 0;
+        return (
+          <button
+            key={opt.value}
+            role="radio"
+            aria-checked={selected}
+            aria-label={opt.label}
+            tabIndex={value ? (selected ? 0 : -1) : isFirst ? 0 : -1}
+            onClick={() => onChange(opt.value)}
+            onKeyDown={(e) => handleKeyDown(e, i)}
+            className={`w-full text-left px-4 py-3 min-h-[44px] border text-sm transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-[#005ea2] ${
+              selected
+                ? "border-2 border-[#005ea2] bg-[#eff6fb] font-semibold text-[#1a4480]"
+                : "border-[#a9aeb1] hover:border-[#005ea2] text-[#1b1b1b]"
+            }`}
+          >
+            <span className="font-semibold">{opt.label}</span>
+            {opt.desc && <span className="block text-xs text-gray-500 mt-0.5">{opt.desc}</span>}
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
 // ── Accessible radiogroup for step 1 ──────────────────────────────────────
 
 function BusinessTypeRadioGroup({
@@ -253,7 +317,7 @@ export default function QuizModal({ onComplete, onClose, initialAnswers }: Props
         <button
           onClick={onClose}
           aria-label="Close quiz"
-          className="absolute top-4 right-4 text-[#71767a] hover:text-[#1b1b1b] text-xl leading-none"
+          className="absolute top-4 right-4 text-[#71767a] hover:text-[#1b1b1b] text-xl leading-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#005ea2]"
         >
           ✕
         </button>
@@ -310,19 +374,12 @@ export default function QuizModal({ onComplete, onClose, initialAnswers }: Props
         {step === 2 && (
           <div className="space-y-3">
             <p className="font-medium text-gray-800">How large is your business?</p>
-            {SIZES.map((s) => (
-              <button
-                key={s.value}
-                onClick={() => update("size", s.value)}
-                className={`w-full text-left px-4 py-3 min-h-[44px] border text-sm transition-colors ${
-                  answers.size === s.value
-                    ? "border-[#005ea2] border-2 bg-[#eff6fb] font-semibold text-[#1a4480]"
-                    : "border-[#a9aeb1] hover:border-[#005ea2] text-[#1b1b1b]"
-                }`}
-              >
-                {s.label}
-              </button>
-            ))}
+            <GenericRadioGroup
+              value={answers.size}
+              onChange={(v) => update("size", v as QuizAnswers["size"])}
+              options={SIZES}
+              groupLabel="Business size"
+            />
           </div>
         )}
 
@@ -330,20 +387,12 @@ export default function QuizModal({ onComplete, onClose, initialAnswers }: Props
         {step === 3 && (
           <div className="space-y-3">
             <p className="font-medium text-gray-800">What is your primary need right now?</p>
-            {NEEDS.map((n) => (
-              <button
-                key={n.value}
-                onClick={() => update("primaryNeed", n.value)}
-                className={`w-full text-left px-4 py-3 min-h-[44px] border text-sm transition-colors ${
-                  answers.primaryNeed === n.value
-                    ? "border-[#005ea2] border-2 bg-[#eff6fb] font-semibold text-[#1a4480]"
-                    : "border-[#a9aeb1] hover:border-[#005ea2] text-[#1b1b1b]"
-                }`}
-              >
-                <span className="font-semibold">{n.label}</span>
-                <span className="block text-xs text-gray-500 mt-0.5">{n.desc}</span>
-              </button>
-            ))}
+            <GenericRadioGroup
+              value={answers.primaryNeed}
+              onChange={(v) => update("primaryNeed", v as QuizAnswers["primaryNeed"])}
+              options={NEEDS}
+              groupLabel="Primary need"
+            />
           </div>
         )}
 
