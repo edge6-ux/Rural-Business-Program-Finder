@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { QuizAnswers, matchPrograms, MatchResult } from "@/lib/matcher";
 import { saveLastAnswers } from "@/lib/localStore";
 
@@ -15,12 +15,162 @@ type Step = 0 | 1 | 2 | 3;
 const STEPS = 4;
 
 const BUSINESS_TYPES = [
-  { value: "farmer", label: "Farmer / Rancher", emoji: "🌾" },
-  { value: "meat_processor", label: "Meat / Poultry Processor", emoji: "🥩" },
-  { value: "retail", label: "Retail Food Seller", emoji: "🏪" },
-  { value: "online", label: "Online Food Business", emoji: "💻" },
-  { value: "other", label: "Other Rural Small Business", emoji: "🏘️" },
+  { value: "farmer",         label: "Farmer / Rancher",           ariaLabel: "Farming or agriculture" },
+  { value: "meat_processor", label: "Meat / Poultry Processor",   ariaLabel: "Meat or poultry processing" },
+  { value: "retail",         label: "Retail Food Seller",         ariaLabel: "Retail or storefront" },
+  { value: "online",         label: "Online Food Business",       ariaLabel: "Online business" },
+  { value: "other",          label: "Other Rural Small Business", ariaLabel: "Other business type" },
 ] as const;
+
+// ── SVG icons ──────────────────────────────────────────────────────────────
+
+const svgProps = {
+  width: 24, height: 24,
+  viewBox: "0 0 24 24",
+  fill: "none",
+  stroke: "currentColor",
+  strokeWidth: 1.5,
+  strokeLinecap: "round" as const,
+  strokeLinejoin: "round" as const,
+  "aria-hidden": true,
+};
+
+function IconFarmer() {
+  return (
+    <svg {...svgProps}>
+      {/* stem */}
+      <line x1="12" y1="22" x2="12" y2="9" />
+      {/* left grain head */}
+      <path d="M12 9 C10 7 9 4 11 3 C13 2 13 6 12 9" />
+      {/* right grain head */}
+      <path d="M12 9 C14 7 15 4 13 3 C11 2 11 6 12 9" />
+      {/* left lower leaf */}
+      <path d="M12 14 C10 12 8 11 8 8" />
+      {/* right lower leaf */}
+      <path d="M12 14 C14 12 16 11 16 8" />
+    </svg>
+  );
+}
+
+function IconMeatProcessor() {
+  return (
+    <svg {...svgProps}>
+      {/* knife blade */}
+      <path d="M8 3 C14 3 17 7 16 12 L8 12 Z" />
+      {/* handle */}
+      <line x1="8" y1="12" x2="8" y2="21" />
+      {/* bolster line */}
+      <line x1="6" y1="12" x2="10" y2="12" />
+    </svg>
+  );
+}
+
+function IconRetail() {
+  return (
+    <svg {...svgProps}>
+      {/* bag body */}
+      <path d="M5 7 H19 L17 21 H7 Z" />
+      {/* handles */}
+      <path d="M9 7 C9 4 15 4 15 7" />
+    </svg>
+  );
+}
+
+function IconOnline() {
+  return (
+    <svg {...svgProps}>
+      {/* screen */}
+      <rect x="3" y="3" width="18" height="13" rx="1.5" />
+      {/* keyboard base */}
+      <path d="M1 20 H23 L21 16 H3 Z" />
+      {/* screen detail */}
+      <line x1="9" y1="20" x2="15" y2="20" />
+    </svg>
+  );
+}
+
+function IconOther() {
+  return (
+    <svg {...svgProps}>
+      {/* roof */}
+      <path d="M3 10 L12 3 L21 10" />
+      {/* walls */}
+      <rect x="5" y="10" width="14" height="11" />
+      {/* door */}
+      <rect x="9" y="15" width="6" height="6" />
+    </svg>
+  );
+}
+
+const BUSINESS_TYPE_ICONS: Record<string, React.ReactNode> = {
+  farmer:         <IconFarmer />,
+  meat_processor: <IconMeatProcessor />,
+  retail:         <IconRetail />,
+  online:         <IconOnline />,
+  other:          <IconOther />,
+};
+
+// ── Accessible radiogroup for step 1 ──────────────────────────────────────
+
+function BusinessTypeRadioGroup({
+  value,
+  onChange,
+}: {
+  value: string | undefined;
+  onChange: (v: string) => void;
+}) {
+  const groupRef = useRef<HTMLDivElement>(null);
+
+  function handleKeyDown(e: React.KeyboardEvent, index: number) {
+    const len = BUSINESS_TYPES.length;
+    let next: number | null = null;
+    if (e.key === "ArrowDown" || e.key === "ArrowRight") {
+      next = (index + 1) % len;
+    } else if (e.key === "ArrowUp" || e.key === "ArrowLeft") {
+      next = (index - 1 + len) % len;
+    } else if (e.key === "Home") {
+      next = 0;
+    } else if (e.key === "End") {
+      next = len - 1;
+    }
+    if (next !== null) {
+      e.preventDefault();
+      onChange(BUSINESS_TYPES[next].value);
+      const buttons = groupRef.current?.querySelectorAll<HTMLElement>('[role="radio"]');
+      buttons?.[next]?.focus();
+    }
+  }
+
+  return (
+    <div role="radiogroup" aria-label="Business type" ref={groupRef} className="space-y-2">
+      {BUSINESS_TYPES.map((bt, i) => {
+        const selected = value === bt.value;
+        const isFirst = i === 0;
+        return (
+          <button
+            key={bt.value}
+            role="radio"
+            aria-checked={selected}
+            aria-label={bt.ariaLabel}
+            tabIndex={value ? (selected ? 0 : -1) : isFirst ? 0 : -1}
+            onClick={() => onChange(bt.value)}
+            onKeyDown={(e) => handleKeyDown(e, i)}
+            className={`w-full flex items-center gap-3 px-4 py-3 min-h-[44px] border text-sm transition-colors text-left focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-[#005ea2] ${
+              selected
+                ? "border-2 border-[#005ea2] bg-[#eff6fb] text-[#1a4480] font-semibold"
+                : "border-[#a9aeb1] hover:border-[#005ea2] text-[#1b1b1b]"
+            }`}
+          >
+            <span className={selected ? "text-[#005ea2]" : "text-[#565c65]"}>
+              {BUSINESS_TYPE_ICONS[bt.value]}
+            </span>
+            {bt.label}
+          </button>
+        );
+      })}
+    </div>
+  );
+}
 
 const SIZES = [
   { value: "micro", label: "Micro (1–4 employees or < $250K revenue)" },
@@ -149,20 +299,10 @@ export default function QuizModal({ onComplete, onClose, initialAnswers }: Props
         {step === 1 && (
           <div className="space-y-3">
             <p className="font-medium text-gray-800">What best describes your business?</p>
-            {BUSINESS_TYPES.map((bt) => (
-              <button
-                key={bt.value}
-                onClick={() => update("businessType", bt.value)}
-                className={`w-full text-left px-4 py-3 min-h-[44px] border text-sm transition-colors ${
-                  answers.businessType === bt.value
-                    ? "border-[#005ea2] border-2 bg-[#eff6fb] font-semibold text-[#1a4480]"
-                    : "border-[#a9aeb1] hover:border-[#005ea2] text-[#1b1b1b]"
-                }`}
-              >
-                <span className="mr-2">{bt.emoji}</span>
-                {bt.label}
-              </button>
-            ))}
+            <BusinessTypeRadioGroup
+              value={answers.businessType}
+              onChange={(v) => update("businessType", v as QuizAnswers["businessType"])}
+            />
           </div>
         )}
 
