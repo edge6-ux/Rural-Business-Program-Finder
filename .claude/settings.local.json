@@ -1,7 +1,17 @@
 {
   "permissions": {
     "allow": [
-      "Bash(npx create-next-app@latest . --typescript --tailwind --eslint --app --no-src-dir --import-alias \"@/*\" --yes)"
+      "Bash(npx create-next-app@latest . --typescript --tailwind --eslint --app --no-src-dir --import-alias \"@/*\" --yes)",
+      "Bash(npx tsc:*)",
+      "Bash(npm run:*)",
+      "Bash(netstat -ano)",
+      "Bash(taskkill:*)",
+      "Bash(cmd /c \"taskkill /PID 13860 /F\")",
+      "Bash(cmd /c \"taskkill /F /PID 13860\")",
+      "WebFetch(domain:www.sba.gov)",
+      "WebFetch(domain:cdn.uswds.gov)",
+      "Bash(curl -s https://www.sba.gov/)",
+      "Bash(find C:UsersedgerOneDriveDocumentssbabotnode_modulesnextdist -name *.md)"
     ]
   }
 }
