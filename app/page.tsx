@@ -114,12 +114,10 @@ export default function Home() {
       <header className="bg-white sticky top-0 z-40">
         <div className="max-w-5xl mx-auto px-4 py-3 sm:py-4 flex items-center justify-between gap-4">
           {/* SBA Logo */}
-          <a
-            href="https://www.sba.gov/business-guide/grow-your-business/rural-businesses"
-            target="_blank"
-            rel="noopener noreferrer"
+          <button
+            onClick={() => setView("home")}
             className="shrink-0 flex items-center"
-            aria-label="U.S. Small Business Administration — Rural Businesses"
+            aria-label="Go to homepage"
           >
             <Image
               src="/logo3.png"
@@ -129,7 +127,7 @@ export default function Home() {
               style={{ width: "auto", height: "clamp(32px, 6vw, 48px)" }}
               priority
             />
-          </a>
+          </button>
 
           <button
             onClick={() => setQuizOpen(true)}
