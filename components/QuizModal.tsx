@@ -98,7 +98,7 @@ export default function QuizModal({ onComplete, onClose, initialAnswers }: Props
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-      <div className="bg-white shadow-2xl w-full max-w-lg p-8 relative border-t-4 border-[#005ea2]">
+      <div className="bg-white shadow-2xl w-full max-w-lg p-6 sm:p-8 relative border-t-4 border-[#005ea2] overflow-y-auto max-h-[90vh]">
         {/* Close */}
         <button
           onClick={onClose}
@@ -153,7 +153,7 @@ export default function QuizModal({ onComplete, onClose, initialAnswers }: Props
               <button
                 key={bt.value}
                 onClick={() => update("businessType", bt.value)}
-                className={`w-full text-left px-4 py-3 border text-sm transition-colors ${
+                className={`w-full text-left px-4 py-3 min-h-[44px] border text-sm transition-colors ${
                   answers.businessType === bt.value
                     ? "border-[#005ea2] border-2 bg-[#eff6fb] font-semibold text-[#1a4480]"
                     : "border-[#a9aeb1] hover:border-[#005ea2] text-[#1b1b1b]"
@@ -174,7 +174,7 @@ export default function QuizModal({ onComplete, onClose, initialAnswers }: Props
               <button
                 key={s.value}
                 onClick={() => update("size", s.value)}
-                className={`w-full text-left px-4 py-3 border text-sm transition-colors ${
+                className={`w-full text-left px-4 py-3 min-h-[44px] border text-sm transition-colors ${
                   answers.size === s.value
                     ? "border-[#005ea2] border-2 bg-[#eff6fb] font-semibold text-[#1a4480]"
                     : "border-[#a9aeb1] hover:border-[#005ea2] text-[#1b1b1b]"
@@ -194,7 +194,7 @@ export default function QuizModal({ onComplete, onClose, initialAnswers }: Props
               <button
                 key={n.value}
                 onClick={() => update("primaryNeed", n.value)}
-                className={`w-full text-left px-4 py-3 border text-sm transition-colors ${
+                className={`w-full text-left px-4 py-3 min-h-[44px] border text-sm transition-colors ${
                   answers.primaryNeed === n.value
                     ? "border-[#005ea2] border-2 bg-[#eff6fb] font-semibold text-[#1a4480]"
                     : "border-[#a9aeb1] hover:border-[#005ea2] text-[#1b1b1b]"
@@ -217,7 +217,7 @@ export default function QuizModal({ onComplete, onClose, initialAnswers }: Props
           {step > 0 ? (
             <button
               onClick={() => setStep((s) => (s - 1) as Step)}
-              className="px-4 py-2 text-sm text-[#005ea2] border border-[#005ea2] hover:bg-[#eff6fb] transition-colors"
+              className="px-4 py-3 sm:py-2 text-sm text-[#005ea2] border border-[#005ea2] hover:bg-[#eff6fb] transition-colors min-h-[44px]"
             >
               Back
             </button>
@@ -227,14 +227,14 @@ export default function QuizModal({ onComplete, onClose, initialAnswers }: Props
           {step < 3 ? (
             <button
               onClick={next}
-              className="px-6 py-2 text-sm font-semibold bg-[#005ea2] text-white hover:bg-[#1a4480] transition-colors"
+              className="px-6 py-3 sm:py-2 text-sm font-semibold bg-[#005ea2] text-white hover:bg-[#1a4480] transition-colors min-h-[44px]"
             >
               Next
             </button>
           ) : (
             <button
               onClick={submit}
-              className="px-6 py-2 text-sm font-semibold bg-[#005ea2] text-white hover:bg-[#1a4480] transition-colors"
+              className="px-6 py-3 sm:py-2 text-sm font-semibold bg-[#005ea2] text-white hover:bg-[#1a4480] transition-colors min-h-[44px]"
             >
               Find Programs
             </button>

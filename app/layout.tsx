@@ -14,7 +14,16 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "Rural Business Program Finder | U.S. Small Business Administration",
-  description: "Find SBA and USDA programs you may be eligible for as a rural small business owner.",
+  description: "Find federal grants, loans, and technical assistance for rural small businesses — search by location, industry, and eligibility in seconds.",
+  openGraph: {
+    title: "Rural Business Program Finder | U.S. Small Business Administration",
+    description: "Find federal grants, loans, and technical assistance for rural small businesses — search by location, industry, and eligibility in seconds.",
+    images: [{ url: "/footer3.png" }],
+  },
+  twitter: {
+    card: "summary_large_image",
+    images: ["/footer3.png"],
+  },
 };
 
 export default function RootLayout({

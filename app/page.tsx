@@ -15,9 +15,22 @@ import {
 
 type View = "home" | "results";
 
+function trackEvent(name: string, payload?: Record<string, unknown>) {
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const dl = (window as any).dataLayer;
+    if (Array.isArray(dl)) {
+      dl.push({ event: name, ...payload });
+    }
+  } catch {
+    // analytics unavailable — fail silently
+  }
+}
+
 export default function Home() {
   const [view, setView] = useState<View>("home");
   const [quizOpen, setQuizOpen] = useState(false);
+  const [howItWorksOpen, setHowItWorksOpen] = useState(false);
   const [boards, setBoards] = useState<Board[]>([]);
   const [activeBoard, setActiveBoard] = useState<Board | null>(null);
   const [lastAnswers, setLastAnswers] = useState<QuizAnswers | null>(null);
@@ -99,25 +112,28 @@ export default function Home() {
 
       {/* SBA Header — white logo bar */}
       <header className="bg-white sticky top-0 z-40">
-        <div className="max-w-5xl mx-auto px-4 py-4 flex items-center justify-between gap-4">
+        <div className="max-w-5xl mx-auto px-4 py-3 sm:py-4 flex items-center justify-between gap-4">
           {/* SBA Logo */}
-          <button
-            onClick={() => setView("home")}
+          <a
+            href="https://www.sba.gov/business-guide/grow-your-business/rural-businesses"
+            target="_blank"
+            rel="noopener noreferrer"
             className="shrink-0 flex items-center"
+            aria-label="U.S. Small Business Administration — Rural Businesses"
           >
             <Image
               src="/logo3.png"
               alt="U.S. Small Business Administration"
               height={48}
               width={200}
-              style={{ width: "auto", height: "48px" }}
+              style={{ width: "auto", height: "clamp(32px, 6vw, 48px)" }}
               priority
             />
-          </button>
+          </a>
 
           <button
             onClick={() => setQuizOpen(true)}
-            className="flex items-center gap-1.5 px-4 py-2 text-sm font-semibold bg-[#005ea2] text-white rounded-none hover:bg-[#1a4480] transition-colors"
+            className="flex items-center gap-1.5 px-3 sm:px-4 py-2 text-xs sm:text-sm font-semibold bg-[#005ea2] text-white rounded-none hover:bg-[#1a4480] transition-colors min-h-[40px]"
           >
             + New Search
           </button>
@@ -133,27 +149,59 @@ export default function Home() {
         </div>
       </header>
 
-      <main className="max-w-3xl mx-auto px-4 py-10 flex-1 w-full">
+      <main className="max-w-3xl mx-auto px-4 py-6 sm:py-10 flex-1 w-full">
         {view === "home" && (
           <div>
             {/* Hero */}
-            <div className="mb-10">
-              <div className="bg-[#eff6fb] border-l-4 border-[#005ea2] px-6 py-6 mb-8">
-                <h1 className="text-2xl font-bold text-[#1b1b1b] mb-2">
-                  Find Rural Business Programs
-                </h1>
-                <p className="text-[#3d4551] text-sm leading-relaxed max-w-lg">
-                  Answer 4 quick questions and we&apos;ll match you with SBA and USDA
-                  programs you may be eligible for — no account needed.
-                </p>
-                <button
-                  onClick={() => setQuizOpen(true)}
-                  className="mt-4 inline-flex items-center gap-2 px-5 py-2.5 text-sm font-semibold bg-[#005ea2] text-white hover:bg-[#1a4480] transition-colors"
+            <section aria-labelledby="hero-heading" className="mb-10">
+              <div className="bg-[#eff6fb] border-l-4 border-[#005ea2] px-4 py-6 sm:px-6 sm:py-8 mb-8">
+                <h1
+                  id="hero-heading"
+                  className="text-2xl sm:text-3xl font-bold text-[#1b1b1b] mb-3 leading-tight"
                 >
-                  Start the Quiz
-                </button>
+                  Find federal programs for rural businesses — fast.
+                </h1>
+                <p className="text-[#3d4551] text-sm sm:text-base leading-relaxed max-w-xl mb-5">
+                  Search grants, loans, and technical assistance by location,
+                  industry, and eligibility. Answer 4 quick questions — no
+                  account needed.
+                </p>
+
+                <div className="flex flex-col sm:flex-row gap-3">
+                  <button
+                    id="hero-find"
+                    onClick={() => {
+                      trackEvent("hero_cta_click", { cta: "find_programs" });
+                      setQuizOpen(true);
+                    }}
+                    aria-label="Find programs — open the search quiz"
+                    className="w-full sm:w-auto px-5 py-3 sm:py-2.5 text-sm font-semibold bg-[#005ea2] text-white hover:bg-[#1a4480] transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#005ea2]"
+                  >
+                    Find programs
+                  </button>
+                  <button
+                    onClick={() => setHowItWorksOpen(true)}
+                    aria-label="How it works — learn about this tool"
+                    className="w-full sm:w-auto px-5 py-3 sm:py-2.5 text-sm font-semibold border border-[#005ea2] text-[#005ea2] hover:bg-[#d9e8f6] transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#005ea2]"
+                  >
+                    How it works
+                  </button>
+                </div>
+
+                <p className="mt-5 text-xs text-[#565c65]">
+                  Source: Administering agencies.{" "}
+                  <a
+                    href="https://www.sba.gov"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="underline text-[#005ea2] hover:text-[#1a4480]"
+                  >
+                    Visit sba.gov
+                  </a>{" "}
+                  for official program details.
+                </p>
               </div>
-            </div>
+            </section>
 
             {/* Saved boards */}
             {boards.length > 0 && (
@@ -229,6 +277,74 @@ export default function Home() {
         />
       )}
 
+      {/* How it works modal */}
+      {howItWorksOpen && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="hiw-title"
+        >
+          <div className="bg-white shadow-2xl w-full max-w-md p-6 sm:p-8 relative border-t-4 border-[#005ea2] overflow-y-auto max-h-[90vh]">
+            <button
+              onClick={() => setHowItWorksOpen(false)}
+              aria-label="Close how it works"
+              className="absolute top-4 right-4 text-[#71767a] hover:text-[#1b1b1b] text-xl leading-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#005ea2]"
+            >
+              ✕
+            </button>
+            <h2 id="hiw-title" className="text-xl font-bold text-[#1b1b1b] mb-4">
+              How it works
+            </h2>
+            <ol className="space-y-4 text-sm text-[#1b1b1b]">
+              <li className="flex gap-3">
+                <span className="shrink-0 w-6 h-6 rounded-full bg-[#005ea2] text-white text-xs font-bold flex items-center justify-center">1</span>
+                <div>
+                  <p className="font-semibold">Answer 4 questions</p>
+                  <p className="text-[#565c65] mt-0.5">Tell us your location, business type, size, and primary need.</p>
+                </div>
+              </li>
+              <li className="flex gap-3">
+                <span className="shrink-0 w-6 h-6 rounded-full bg-[#005ea2] text-white text-xs font-bold flex items-center justify-center">2</span>
+                <div>
+                  <p className="font-semibold">Get matched programs</p>
+                  <p className="text-[#565c65] mt-0.5">We filter SBA and USDA programs to those you may qualify for.</p>
+                </div>
+              </li>
+              <li className="flex gap-3">
+                <span className="shrink-0 w-6 h-6 rounded-full bg-[#005ea2] text-white text-xs font-bold flex items-center justify-center">3</span>
+                <div>
+                  <p className="font-semibold">Apply through the agency</p>
+                  <p className="text-[#565c65] mt-0.5">Each result links directly to the official program page. No middleman.</p>
+                </div>
+              </li>
+            </ol>
+            <p className="mt-6 text-xs text-[#565c65] border-t border-[#dfe1e2] pt-4">
+              Program data is sourced from SBA and USDA agency publications.
+              Eligibility is determined solely by the administering agency.{" "}
+              <a
+                href="https://www.sba.gov"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="underline text-[#005ea2]"
+              >
+                sba.gov
+              </a>
+            </p>
+            <button
+              onClick={() => {
+                setHowItWorksOpen(false);
+                trackEvent("hero_cta_click", { cta: "find_programs_from_hiw" });
+                setQuizOpen(true);
+              }}
+              className="mt-4 w-full px-5 py-2.5 text-sm font-semibold bg-[#005ea2] text-white hover:bg-[#1a4480] transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#005ea2]"
+            >
+              Find programs
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Footer */}
       <footer className="bg-[#162e52] text-white mt-auto">
         <div className="max-w-5xl mx-auto px-4 py-8">
@@ -250,7 +366,7 @@ export default function Home() {
               <p className="text-[#a9c6e3] text-xs leading-relaxed">
                 This tool is for informational purposes only. Program eligibility is
                 determined by the administering agency. Visit{" "}
-                <span className="text-white underline">sba.gov</span> for official program details.
+                <a href="https://www.sba.gov/" target="_blank" rel="noopener noreferrer" className="text-white underline">sba.gov</a> for official program details.
               </p>
             </div>
           </div>
