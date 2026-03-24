@@ -18,11 +18,11 @@ export const metadata: Metadata = {
   openGraph: {
     title: "Rural Business Program Finder | U.S. Small Business Administration",
     description: "Find federal grants, loans, and technical assistance for rural small businesses — search by location, industry, and eligibility in seconds.",
-    images: [{ url: "/footer3.png" }],
+    images: [{ url: "/thumbnail.jpg" }],
   },
   twitter: {
     card: "summary_large_image",
-    images: ["/footer3.png"],
+    images: ["/thumbnail.jpg"],
   },
 };
 
